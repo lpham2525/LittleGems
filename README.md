@@ -1,6 +1,10 @@
 # LittleGems
-## NAME
-Little Gems
+
+## Visual
+![Little Gems](./homepage.png?raw=true "Homepage")
+
+Link to app: https://erikapaige.github.io/LittleGems/
+
 ## DESCRIPTION
 Apps like Yelp, Google, Uber Eats, and Door Dash have revolutionized the way we explore restaurants. These apps provide users endless options of restaurants and food based on the number of reviews and ratings each location has. The greater each of these categories, the higher the business is ranked and recommended to users.
 But, what happens to the restaurant with few reviews? The one that has spectacular food and service, but only a small sample of people know about? Many times they are overlooked and not recommended. Little Gems shines a spot light on these places by providing users with recommendations of 4-star rated restaurants (that lack reviews) in their area. 
