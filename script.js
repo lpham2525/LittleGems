@@ -139,17 +139,25 @@ async function retrieveSaved () {
   const favoriteArray = JSON.parse(localStorage.getItem('favoriteArray'))
 
   // Query restaurant data
+
   const headers = new Headers({
     'X-Zomato-API-Key': '6cc636d36121906ab8ce98c1468d462a'
   })
 
-  const restaurants = await Promise.all(
-    favoriteArray.map(resId => {
-      fetch(`https://developers.zomato.com/api/v2.1/restaurant?res_id=${resId}`, {
-        headers: headers
-      }).then(res => res.json())
-    }
-  ))
+  // Function that returns a single query promise given a resId
+  const queryFunc = (resId) => {
+    const url = `https://developers.zomato.com/api/v2.1/restaurant?res_id=${resId}`
+    return fetch(url, {headers: headers}).then(res => {
+      if(res.ok) {
+        return res.json()
+      } else {
+        throw Error(res.statusText)
+      }
+    })
+  }
+  
+  // Send all requests then wait for them to complete
+  const restaurants = await Promise.all(favoriteArray.map(queryFunc))
   
   // Display on page
   restaurants.map((r, i) => {
