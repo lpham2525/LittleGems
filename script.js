@@ -56,10 +56,10 @@ function saveRestaurant () {
   console.log(restaurantID)
   localStorage.setItem('favoriteArray', JSON.stringify(favoriteArray))
 }
+
 // Initialize and add the map
 function initMap () {
-  // get users location and assigns it to empty object created earlier.
-  navigator.geolocation.getCurrentPosition(success, error, position => { })
+  
   function success (position) {
     userPosition.lat = position.coords.latitude
     userPosition.lng = position.coords.longitude
@@ -80,122 +80,124 @@ function initMap () {
     const marker = new google.maps.Marker({ position: greenville, map: map })
   }
 
+  // get users location and assigns it to empty object created earlier.
+  navigator.geolocation.getCurrentPosition(success, error, position => { })
+}
+
   // START OF ZOMATO API
 
-  getGems = function () {
-    // prevents page from refreshing when button is clicked
-    event.preventDefault()
-    // Clear restaurants when searching again
-    document.getElementById('row1').innerHTML = ''
-    document.getElementById('row2').innerHTML = ''
+function getGems () {
+  // prevents page from refreshing when button is clicked
+  event.preventDefault()
+  // Clear restaurants when searching again
+  document.getElementById('row1').innerHTML = ''
+  document.getElementById('row2').innerHTML = ''
 
-    // Gets value from the search input
-    const searchInput = document.getElementById('searchInput').value
+  // Gets value from the search input
+  const searchInput = document.getElementById('searchInput').value
 
-    // Calls the Zomato Search API and passes in the user's search
-    $.ajax({
-      type: 'GET', // it's a GET request API
-      headers: {
-        'X-Zomato-API-Key': '6cc636d36121906ab8ce98c1468d462a' // only allowed non-standard header
-      },
-      url: `https://developers.zomato.com/api/v2.1/search?q=${searchInput}&radius=40233&?count=50&lat=${userPosition.lat}&lon=${userPosition.lng}`, // what do you want
-      dataType: 'json', // wanted response data type - let jQuery handle the rest...
-      data: {
-        // could be directly in URL, but this is more prettier, clearer, and easier to edit
-      },
-      processData: true, // data is an object => tells jQuery to construct URL params from it
-      success: function (data) {
-        console.log(data)
-        
-        // Grab references to our rows
-        const row1 = (document.getElementById('row1'))
-        const row2 = (document.getElementById('row2'))
+  // Calls the Zomato Search API and passes in the user's search
+  $.ajax({
+    type: 'GET', // it's a GET request API
+    headers: {
+      'X-Zomato-API-Key': '6cc636d36121906ab8ce98c1468d462a' // only allowed non-standard header
+    },
+    url: `https://developers.zomato.com/api/v2.1/search?q=${searchInput}&radius=40233&?count=50&lat=${userPosition.lat}&lon=${userPosition.lng}`, // what do you want
+    dataType: 'json', // wanted response data type - let jQuery handle the rest...
+    data: {
+      // could be directly in URL, but this is more prettier, clearer, and easier to edit
+    },
+    processData: true, // data is an object => tells jQuery to construct URL params from it
+    success: function (data) {
+      console.log(data)
+      
+      // Grab references to our rows
+      const row1 = (document.getElementById('row1'))
+      const row2 = (document.getElementById('row2'))
 
-        // Filter restaurants
-        const rFiltered = data.restaurants
-          .filter(r => r.restaurant.user_rating.aggregate_rating > 3 && r.restaurant.user_rating.votes < 40)
-          .slice(0,8)
-          .map((r, i) => {
-            if(i < 4) {
-              row1.appendChild(generateRestaurant(r.restaurant, i))
-            } else {
-              row2.appendChild(generateRestaurant(r.restaurant, i))
-            }
-          })
+      // Filter restaurants
+      const rFiltered = data.restaurants
+        .filter(r => r.restaurant.user_rating.aggregate_rating > 3 && r.restaurant.user_rating.votes < 40)
+        .slice(0,8)
+        .map((r, i) => {
+          if(i < 4) {
+            row1.appendChild(generateRestaurant(r.restaurant, i))
+          } else {
+            row2.appendChild(generateRestaurant(r.restaurant, i))
+          }
+        })
 
 
-        // let cardsAdded = 0
-        // // Continues to loop through Zomato API and create elements until we have 8 cards on our page
-        // for (let i = 0; i < data.restaurants.length && (cardsAdded < 8); i++) {
-        //   // Pick Restaurant out of the array
-        //   const r = data.restaurants[i].restaurant
-        //   // Checks if restaurants rating is above 3 stars but has fewer than 40 total ratings
-        //   if (r.user_rating.aggregate_rating > 3 && r.user_rating.votes < 40) {
-        //     // Checks that the div row1 has less than 4 cards, if it has 4 the next 4 cards are added to row 2 with the else statement
-        //     if (cardsAdded < 4) {
-        //       row1.appendChild(generateRestaurant(r, i))
-        //     } else {
-        //       row2.appendChild(generateRestaurant(r, i))
-        //     }
-        //     cardsAdded++
-        //   }
-        // }
-      },
-      error: function (xhr, status, error) {
-        var errorMessage = xhr.status + ': ' + xhr.statusText
-        alert('Error - ' + errorMessage)
-      }
-    })
-  }
-
-  document.getElementById('button').addEventListener('click', function () {
-    if (document.getElementById('searchInput').value !== '') {
-      getGems()
-    } else {
-      console.log('Enter a search!')
+      // let cardsAdded = 0
+      // // Continues to loop through Zomato API and create elements until we have 8 cards on our page
+      // for (let i = 0; i < data.restaurants.length && (cardsAdded < 8); i++) {
+      //   // Pick Restaurant out of the array
+      //   const r = data.restaurants[i].restaurant
+      //   // Checks if restaurants rating is above 3 stars but has fewer than 40 total ratings
+      //   if (r.user_rating.aggregate_rating > 3 && r.user_rating.votes < 40) {
+      //     // Checks that the div row1 has less than 4 cards, if it has 4 the next 4 cards are added to row 2 with the else statement
+      //     if (cardsAdded < 4) {
+      //       row1.appendChild(generateRestaurant(r, i))
+      //     } else {
+      //       row2.appendChild(generateRestaurant(r, i))
+      //     }
+      //     cardsAdded++
+      //   }
+      // }
+    },
+    error: function (xhr, status, error) {
+      var errorMessage = xhr.status + ': ' + xhr.statusText
+      alert('Error - ' + errorMessage)
     }
   })
-
-  document.getElementById('searchInput').addEventListener('keypress', function () {
-    const key = event.keyCode
-    if (key === 13 && document.getElementById('searchInput').value !== '') {
-      getGems()
-    }
-  })
-  // END OF ZOMATO API
 }
-// END OF GEOLOCATION
-document.getElementById('savedGem').addEventListener('click', () => {
-  async function retrieveSaved () {
-    const row1 = document.getElementById('row1')
-    const row2 = document.getElementById('row2')
-    row1.innerHTML = ''
-    row2.innerHTML = ''
 
-    // Retrieve array of favorites
-    const favoriteArray = JSON.parse(localStorage.getItem('favoriteArray'))
+async function retrieveSaved () {
+  const row1 = document.getElementById('row1')
+  const row2 = document.getElementById('row2')
+  row1.innerHTML = ''
+  row2.innerHTML = ''
 
-    // Query restaurant data
-    const headers = new Headers({
-      'X-Zomato-API-Key': '6cc636d36121906ab8ce98c1468d462a'
-    })
+  // Retrieve array of favorites
+  const favoriteArray = JSON.parse(localStorage.getItem('favoriteArray'))
 
-    const restaurants = await Promise.all(
-      favoriteArray.map(resId => {
-        fetch(`https://developers.zomato.com/api/v2.1/restaurant?res_id=${resId}`, {
-          headers: headers
-        }).then(res => res.json())
-      }
-    ))
-    
-    // Display on page
-    restaurants.map((r, i) => {
-      if(i < 4) {
-        row1.appendChild(generateRestaurant(r, i))
-      } else {
-        row2.appendChild(generateRestaurant(r, i))
-      }
-    })
+  // Query restaurant data
+  const headers = new Headers({
+    'X-Zomato-API-Key': '6cc636d36121906ab8ce98c1468d462a'
+  })
+
+  const restaurants = await Promise.all(
+    favoriteArray.map(resId => {
+      fetch(`https://developers.zomato.com/api/v2.1/restaurant?res_id=${resId}`, {
+        headers: headers
+      }).then(res => res.json())
+    }
+  ))
+  
+  // Display on page
+  restaurants.map((r, i) => {
+    if(i < 4) {
+      row1.appendChild(generateRestaurant(r, i))
+    } else {
+      row2.appendChild(generateRestaurant(r, i))
+    }
+  })
+}
+
+// Attach Event Handlers
+document.getElementById('savedGem').addEventListener('click', retrieveSaved)
+
+document.getElementById('button').addEventListener('click', function () {
+  if (document.getElementById('searchInput').value !== '') {
+    getGems()
+  } else {
+    console.log('Enter a search!')
   }
-  retrieveSaved()
+})
+
+document.getElementById('searchInput').addEventListener('keypress', function () {
+  const key = event.keyCode
+  if (key === 13 && document.getElementById('searchInput').value !== '') {
+    getGems()
+  }
 })
