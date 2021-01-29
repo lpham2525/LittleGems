@@ -7,6 +7,11 @@ const irvine = {
   lat: 33.6694649,
   lng: -117.8231107
 }
+const greenville = {
+  lat: 34.852619, 
+  lng: -82.394012
+}
+
 // empty array to later store saved restaurants in local storage
 let favoriteArray = []
 
@@ -31,11 +36,48 @@ function initMap () {
     const marker = new google.maps.Marker({ position: userPosition, map: map })
   }
   function error () {
+    // Update user position
+    userPosition.lat = greenville.lat
+    userPosition.lng = greenville.lng
     // The map, centered at user position
     const map = new google.maps.Map(
-      document.getElementById('map'), { zoom: 13, center: irvine })
+      document.getElementById('map'), { zoom: 13, center: greenville })
     // The marker, positioned at user position
-    const marker = new google.maps.Marker({ position: irvine, map: map })
+    const marker = new google.maps.Marker({ position: greenville, map: map })
+  }
+
+  // image error handler, replaces missing images with default placeholder
+  function imgError (image) {
+    console.log(image)
+    image.onerror = ''
+    image.src = './assets/images/logoreal.png'
+    return true
+  }
+
+  function generateRestaurant(r, i) {
+    const gemElem = document.createElement('div')
+    gemElem.setAttribute('id', `card${i}`)
+    gemElem.classList.add('col', 's12', 'm3')
+
+    let photo_url = 'Assets/images/placeholder_1000px.png'
+    // Checks if restaurant has photo or not, if it does sets img source to that, if it doesn't sets img source to placeholder
+    if (r.photos !== undefined && r.photo_count !== 0) {
+      photo_url = r.photos[0].photo.url
+    }
+    gemElem.innerHTML = `<div class="card z-depth-2" id="restauraunt${i}">
+                <div class="card-image">
+                  <img id="img${i}" src="${photo_url}" alt="${r.name}" onerror="imgError(this)">
+                  <a id="favorite" class="btn-floating halfway-fab waves-effect waves-light red"><i onclick="saveRestaurant()" id="${r.id}" class="material-icons">add</i></a>
+                </div>
+                <div class="card-content">
+                  <span class="card-title" id="title${i}">${r.name}</span>
+                  <p id="cuisine${i}">${r.cuisines}</p>
+                  <p id="rating${i}">${r.user_rating.aggregate_rating} (${r.user_rating.votes})</p>
+                  <p id="address${i}">${r.location.address}</p>
+                  <a class="waves-effect waves-light btn" href="${r.url}" id="link${i}" target="_blank">Go To Restaurant</a>
+                </div>
+              </div>`
+    return gemElem
   }
 
   // START OF ZOMATO API
@@ -64,69 +106,25 @@ function initMap () {
       processData: true, // data is an object => tells jQuery to construct URL params from it
       success: function (data) {
         console.log(data)
+        
+        // Grab references to our rows
+        const row1 = (document.getElementById('row1'))
+        const row2 = (document.getElementById('row2'))
 
-        // image error handler, replaces missing images with default placeholder
-        function imgError (image) {
-          console.log(image)
-          image.onerror = ''
-          image.src = './assets/images/logoreal.png'
-          return true
-        }
-
+        let cardsAdded = 0
         // Continues to loop through Zomato API and create elements until we have 8 cards on our page
-        for (i = 1; document.getElementById('row1').childElementCount + document.getElementById('row2').childElementCount < 8; i++) {
+        for (let i = 0; i < data.restaurants.length && (cardsAdded < 8); i++) {
+          // Pick Restaurant out of the array
+          const r = data.restaurants[i].restaurant
           // Checks if restaurants rating is above 3 stars but has fewer than 40 total ratings
-          if (data.restaurants[i].restaurant.user_rating.aggregate_rating > 3 && data.restaurants[i].restaurant.user_rating.votes < 40) {
+          if (r.user_rating.aggregate_rating > 3 && r.user_rating.votes < 40) {
             // Checks that the div row1 has less than 4 cards, if it has 4 the next 4 cards are added to row 2 with the else statement
-            if (document.getElementById('row1').childElementCount < 4) {
-              const row = (document.getElementById('row1'))
-              const gemElem = document.createElement('DIV')
-              row.appendChild(gemElem)
-              gemElem.setAttribute('id', `card${i}`)
-              gemElem.classList.add('col', 's12', 'm3')
-              gemElem.innerHTML = `
-            <div class="card z-depth-2" id="restauraunt${i}">
-              <div class="card-image">
-                <img id="img${i}" src="${data.restaurants[i].restaurant.photos_url}" alt="${data.restaurants[i].restaurant.name}" onerror= "imgError(this)">
-                <a id="favorite" class="btn-floating halfway-fab waves-effect waves-light red"><i onclick="saveRestaurant()" id="${data.restaurants[i].restaurant.id}" class="material-icons">add</i></a>
-              </div>
-              <div class="card-content">
-                <span class="card-title" id="title${i}">${data.restaurants[i].restaurant.name}</span>
-                <p id="cuisine${i}">${data.restaurants[i].restaurant.cuisines}</p>
-                <p id="rating${i}">${data.restaurants[i].restaurant.user_rating.aggregate_rating} (${data.restaurants[i].restaurant.user_rating.votes})</p>
-                <p id="address${i}">${data.restaurants[i].restaurant.location.address}</p>
-                <a class="waves-effect waves-light btn" href="${data.restaurants[i].restaurant.url}" id="link${i}" target="_blank">Go To Restaurant</a>
-              </div>
-            </div>
-                  `
+            if (cardsAdded < 4) {
+              row1.appendChild(generateRestaurant(r, i))
             } else {
-              row = (document.getElementById('row2'))
-              gemElem = document.createElement('DIV')
-              row.appendChild(gemElem)
-              gemElem.setAttribute('id', `card${i}`)
-              gemElem.classList.add('col', 's12', 'm3')
-              gemElem.innerHTML = `
-              <div class="card z-depth-2" id="restauraunt${i}">
-                <div class="card-image">
-                  <img id="img${i}" src="${data.restaurants[i].restaurant.photos_url}" alt="${data.restaurants[i].restaurant.name}" onerror= "imgError(this)">
-                  <a id="favorite" class="btn-floating halfway-fab waves-effect waves-light red"><i onclick="saveRestaurant()" id="${data.restaurants[i].restaurant.id}" class="material-icons">add</i></a>
-                </div>
-                <div class="card-content">
-                  <span class="card-title" id="title${i}">${data.restaurants[i].restaurant.name}</span>
-                  <p id="cuisine${i}">${data.restaurants[i].restaurant.cuisines}</p>
-                  <p id="rating${i}">${data.restaurants[i].restaurant.user_rating.aggregate_rating} (${data.restaurants[i].restaurant.user_rating.votes})</p>
-                  <p id="address${i}">${data.restaurants[i].restaurant.location.address}</p>
-                  <a class="waves-effect waves-light btn" href="${data.restaurants[i].restaurant.url}" id="link${i}" target="_blank">Go To Restaurant</a>
-                </div>
-              </div>`
+              row2.appendChild(generateRestaurant(r, i))
             }
-            // Checks if restaurant has photo or not, if it does sets img source to that, if it doesn't sets img source to placeholder
-            if (data.restaurants[i].restaurant.photo_count === 0 || data.restaurants[i].restaurant.thumb === '' || data.restaurants[i].restaurant.photos[0].photo.url.includes('instagram')) {
-              document.getElementById(`img${i}`).src = 'Assets/images/placeholder_1000px.png'
-            } else {
-              document.getElementById(`img${i}`).src = data.restaurants[i].restaurant.photos[0].photo.url
-            }
-            $('#searchInput').value = ''
+            cardsAdded++
           }
         }
       },
