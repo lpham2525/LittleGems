@@ -12,6 +12,40 @@ const greenville = {
   lng: -82.394012
 }
 
+// image error handler, replaces missing images with default placeholder
+function imgError (image) {
+  console.log(image)
+  image.onerror = ''
+  image.src = './assets/images/logoreal.png'
+  return true
+}
+
+function generateRestaurant(r, i) {
+  const gemElem = document.createElement('div')
+  gemElem.setAttribute('id', `card${i}`)
+  gemElem.classList.add('col', 's12', 'm3')
+
+  let photo_url = 'Assets/images/placeholder_1000px.png'
+  // Checks if restaurant has photo or not, if it does sets img source to that, if it doesn't sets img source to placeholder
+  if (r.photos !== undefined && r.photo_count !== 0) {
+    photo_url = r.photos[0].photo.url
+  }
+  gemElem.innerHTML = `<div class="card z-depth-2" id="restauraunt${i}">
+              <div class="card-image">
+                <img id="img${i}" src="${photo_url}" alt="${r.name}" onerror="imgError(this)">
+                <a id="favorite" class="btn-floating halfway-fab waves-effect waves-light red"><i onclick="saveRestaurant()" id="${r.id}" class="material-icons">add</i></a>
+              </div>
+              <div class="card-content">
+                <span class="card-title" id="title${i}">${r.name}</span>
+                <p id="cuisine${i}">${r.cuisines}</p>
+                <p id="rating${i}">${r.user_rating.aggregate_rating} (${r.user_rating.votes})</p>
+                <p id="address${i}">${r.location.address}</p>
+                <a class="waves-effect waves-light btn" href="${r.url}" id="link${i}" target="_blank">Go To Restaurant</a>
+              </div>
+            </div>`
+  return gemElem
+}
+
 // empty array to later store saved restaurants in local storage
 let favoriteArray = []
 
@@ -44,40 +78,6 @@ function initMap () {
       document.getElementById('map'), { zoom: 13, center: greenville })
     // The marker, positioned at user position
     const marker = new google.maps.Marker({ position: greenville, map: map })
-  }
-
-  // image error handler, replaces missing images with default placeholder
-  function imgError (image) {
-    console.log(image)
-    image.onerror = ''
-    image.src = './assets/images/logoreal.png'
-    return true
-  }
-
-  function generateRestaurant(r, i) {
-    const gemElem = document.createElement('div')
-    gemElem.setAttribute('id', `card${i}`)
-    gemElem.classList.add('col', 's12', 'm3')
-
-    let photo_url = 'Assets/images/placeholder_1000px.png'
-    // Checks if restaurant has photo or not, if it does sets img source to that, if it doesn't sets img source to placeholder
-    if (r.photos !== undefined && r.photo_count !== 0) {
-      photo_url = r.photos[0].photo.url
-    }
-    gemElem.innerHTML = `<div class="card z-depth-2" id="restauraunt${i}">
-                <div class="card-image">
-                  <img id="img${i}" src="${photo_url}" alt="${r.name}" onerror="imgError(this)">
-                  <a id="favorite" class="btn-floating halfway-fab waves-effect waves-light red"><i onclick="saveRestaurant()" id="${r.id}" class="material-icons">add</i></a>
-                </div>
-                <div class="card-content">
-                  <span class="card-title" id="title${i}">${r.name}</span>
-                  <p id="cuisine${i}">${r.cuisines}</p>
-                  <p id="rating${i}">${r.user_rating.aggregate_rating} (${r.user_rating.votes})</p>
-                  <p id="address${i}">${r.location.address}</p>
-                  <a class="waves-effect waves-light btn" href="${r.url}" id="link${i}" target="_blank">Go To Restaurant</a>
-                </div>
-              </div>`
-    return gemElem
   }
 
   // START OF ZOMATO API
@@ -166,78 +166,36 @@ function initMap () {
 }
 // END OF GEOLOCATION
 document.getElementById('savedGem').addEventListener('click', () => {
-  function retrieveSaved () {
-    console.log('click')
-    document.getElementById('row1').innerHTML = ''
-    document.getElementById('row2').innerHTML = ''
-    favoriteArray = JSON.parse(localStorage.getItem('favoriteArray'))
-    console.log(favoriteArray)
-    for (i = 0; i < favoriteArray.length; i++) {
-      console.log(i)
-      $.ajax({
-        type: 'GET', // it's a GET request API
-        headers: {
-          'X-Zomato-API-Key': '6cc636d36121906ab8ce98c1468d462a' // only allowed non-standard header
-        },
-        url: `https://developers.zomato.com/api/v2.1/restaurant?res_id=${favoriteArray[i]}`, // what do you want
-        dataType: 'json', // wanted response data type - let jQuery handle the rest...
-        data: {
-          // could be directly in URL, but this is more pretty, clear and easier to edit
-        },
-        processData: true, // data is an object => tells jQuery to construct URL params from it
-        success: function (data) {
-          console.log(data)
-          // Checks that the div row1 has less than 4 cards, if it has 4 the next 4 cards are added to row 2 with the else statement
-          if (document.getElementById('row1').childElementCount < 4) {
-            console.log(i)
-            const row = (document.getElementById('row1'))
-            const gemElem = document.createElement('div')
-            row.appendChild(gemElem)
-            gemElem.setAttribute('id', 'card')
-            gemElem.classList.add('col', 's12', 'm3')
-            gemElem.innerHTML = `
-              <div class="card z-depth-2" id="restauraunt">
-                <div class="card-image">
-                  <img src="" alt="restaurant option" id="${data.name}">
-                </div>
-                <div class="card-content card-content2">
-                  <span class="card-title" id="title">${data.name}</span>
-                  <p id="cuisine">${data.cuisines}</p>
-                  <p id="rating">${data.user_rating.aggregate_rating} (${data.user_rating.votes})</p>
-                  <p id="address">${data.location.address}</p>
-                  <a class="waves-effect waves-light btn" href="${data.url}" id="link" target="_blank">Go To Restaurant</a>
-                </div>
-              </div>
-                    `
-          } else {
-            row = (document.getElementById('row2'))
-            gemElem = document.createElement('DIV')
-            row.appendChild(gemElem)
-            gemElem.setAttribute('id', 'card')
-            gemElem.classList.add('col', 's12', 'm3')
-            gemElem.innerHTML = `
-                <div class="card z-depth-2" id="restauraunt">
-                  <div class="card-image">
-                    <img src="" alt="restaurant option" id="${data.name}">
-                  </div>
-                  <div class="card-content card-content2">
-                    <span class="card-title" id="title">${data.name}</span>
-                    <p id="cuisine">${data.cuisines}</p>
-                    <p id="rating">${data.user_rating.aggregate_rating} (${data.user_rating.votes})</p>
-                    <p id="address">${data.location.address}</p>
-                    <a class="waves-effect waves-light btn" href="${data.url}" id="link" target="_blank">Go To Restaurant</a>
-                  </div>
-                </div>`
-          }
-          // Checks if restaurant has photo or not, if it does sets img source to that, if it doessets img source to placeholder
-          if (data.photo_count === 0) {
-            document.getElementById(data.name).src = 'Assets/placeholder_Green_1000px.png'
-          } else {
-            document.getElementById(data.name).src = data.photos[0].photo.url
-          }
-        }
-      })
-    }
+  async function retrieveSaved () {
+    const row1 = document.getElementById('row1')
+    const row2 = document.getElementById('row2')
+    row1.innerHTML = ''
+    row2.innerHTML = ''
+
+    // Retrieve array of favorites
+    const favoriteArray = JSON.parse(localStorage.getItem('favoriteArray'))
+
+    // Query restaurant data
+    const headers = new Headers({
+      'X-Zomato-API-Key': '6cc636d36121906ab8ce98c1468d462a'
+    })
+
+    const restaurants = await Promise.all(
+      favoriteArray.map(resId => {
+        fetch(`https://developers.zomato.com/api/v2.1/restaurant?res_id=${resId}`, {
+          headers: headers
+        }).then(res => res.json())
+      }
+    ))
+    
+    // Display on page
+    restaurants.map((r, i) => {
+      if(i < 4) {
+        row1.appendChild(generateRestaurant(r, i))
+      } else {
+        row2.appendChild(generateRestaurant(r, i))
+      }
+    })
   }
   retrieveSaved()
 })
