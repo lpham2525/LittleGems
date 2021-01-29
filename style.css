@@ -123,3 +123,12 @@ form-inline button {
   font-family: Courier, monospace;
   background-color: #ACE1FF;
 }
+
+#resultsContainer {
+  display:grid;
+  grid-template-columns: repeat(auto-fill,256px);
+}
+
+/* .restaurantResult {
+
+} */

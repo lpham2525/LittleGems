@@ -23,7 +23,7 @@ function imgError (image) {
 function generateRestaurant(r, i) {
   const gemElem = document.createElement('div')
   gemElem.setAttribute('id', `card${i}`)
-  gemElem.classList.add('col', 's12', 'm3')
+  gemElem.classList.add('restaurantResult')
 
   let photo_url = 'Assets/images/placeholder_1000px.png'
   // Checks if restaurant has photo or not, if it does sets img source to that, if it doesn't sets img source to placeholder
@@ -89,13 +89,11 @@ async function getGems () {
   // prevents page from refreshing when button is clicked
   event.preventDefault()
 
-  // Grab references to our rows
-  const row1 = (document.getElementById('row1'))
-  const row2 = (document.getElementById('row2'))
+  // Grab references to container
+  const rContainer = document.getElementById('resultsContainer')
 
   // Clear restaurants when searching again
-  row1.innerHTML = ''
-  row2.innerHTML = ''
+  rContainer.innerHTML = ''
 
   // Gets value from the search input
   const searchInput = document.getElementById('searchInput').value
@@ -120,20 +118,15 @@ async function getGems () {
   const rFiltered = data.restaurants
     .filter(r => r.restaurant.user_rating.aggregate_rating > 3 && r.restaurant.user_rating.votes < 40)
     .slice(0,8)
-    .map((r, i) => {
-      if(i < 4) {
-        row1.appendChild(generateRestaurant(r.restaurant, i))
-      } else {
-        row2.appendChild(generateRestaurant(r.restaurant, i))
-      }
-    })
+    .map((r, i) => rContainer.appendChild(generateRestaurant(r.restaurant, i)))
 }
 
 async function retrieveSaved () {
-  const row1 = document.getElementById('row1')
-  const row2 = document.getElementById('row2')
-  row1.innerHTML = ''
-  row2.innerHTML = ''
+  // Grab references to container
+  const rContainer = document.getElementById('resultsContainer')
+
+  // Clear restaurants when searching again
+  rContainer.innerHTML = ''
 
   // Retrieve array of favorites
   const favoriteArray = JSON.parse(localStorage.getItem('favoriteArray'))
@@ -160,13 +153,7 @@ async function retrieveSaved () {
   const restaurants = await Promise.all(favoriteArray.map(queryFunc))
   
   // Display on page
-  restaurants.map((r, i) => {
-    if(i < 4) {
-      row1.appendChild(generateRestaurant(r, i))
-    } else {
-      row2.appendChild(generateRestaurant(r, i))
-    }
-  })
+  restaurants.map((r, i) => rContainer.appendChild(generateRestaurant(r, i)))
 }
 
 // Attach Event Handlers
