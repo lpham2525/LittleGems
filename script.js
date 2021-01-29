@@ -111,22 +111,35 @@ function initMap () {
         const row1 = (document.getElementById('row1'))
         const row2 = (document.getElementById('row2'))
 
-        let cardsAdded = 0
-        // Continues to loop through Zomato API and create elements until we have 8 cards on our page
-        for (let i = 0; i < data.restaurants.length && (cardsAdded < 8); i++) {
-          // Pick Restaurant out of the array
-          const r = data.restaurants[i].restaurant
-          // Checks if restaurants rating is above 3 stars but has fewer than 40 total ratings
-          if (r.user_rating.aggregate_rating > 3 && r.user_rating.votes < 40) {
-            // Checks that the div row1 has less than 4 cards, if it has 4 the next 4 cards are added to row 2 with the else statement
-            if (cardsAdded < 4) {
-              row1.appendChild(generateRestaurant(r, i))
+        // Filter restaurants
+        const rFiltered = data.restaurants
+          .filter(r => r.restaurant.user_rating.aggregate_rating > 3 && r.restaurant.user_rating.votes < 40)
+          .slice(0,8)
+          .map((r, i) => {
+            if(i < 4) {
+              row1.appendChild(generateRestaurant(r.restaurant, i))
             } else {
-              row2.appendChild(generateRestaurant(r, i))
+              row2.appendChild(generateRestaurant(r.restaurant, i))
             }
-            cardsAdded++
-          }
-        }
+          })
+
+
+        // let cardsAdded = 0
+        // // Continues to loop through Zomato API and create elements until we have 8 cards on our page
+        // for (let i = 0; i < data.restaurants.length && (cardsAdded < 8); i++) {
+        //   // Pick Restaurant out of the array
+        //   const r = data.restaurants[i].restaurant
+        //   // Checks if restaurants rating is above 3 stars but has fewer than 40 total ratings
+        //   if (r.user_rating.aggregate_rating > 3 && r.user_rating.votes < 40) {
+        //     // Checks that the div row1 has less than 4 cards, if it has 4 the next 4 cards are added to row 2 with the else statement
+        //     if (cardsAdded < 4) {
+        //       row1.appendChild(generateRestaurant(r, i))
+        //     } else {
+        //       row2.appendChild(generateRestaurant(r, i))
+        //     }
+        //     cardsAdded++
+        //   }
+        // }
       },
       error: function (xhr, status, error) {
         var errorMessage = xhr.status + ': ' + xhr.statusText
