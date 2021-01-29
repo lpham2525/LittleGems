@@ -88,9 +88,14 @@ function initMap () {
 async function getGems () {
   // prevents page from refreshing when button is clicked
   event.preventDefault()
+
+  // Grab references to our rows
+  const row1 = (document.getElementById('row1'))
+  const row2 = (document.getElementById('row2'))
+
   // Clear restaurants when searching again
-  document.getElementById('row1').innerHTML = ''
-  document.getElementById('row2').innerHTML = ''
+  row1.innerHTML = ''
+  row2.innerHTML = ''
 
   // Gets value from the search input
   const searchInput = document.getElementById('searchInput').value
@@ -110,9 +115,6 @@ async function getGems () {
 
   // Display results
   console.log(data)
-  // Grab references to our rows
-  const row1 = (document.getElementById('row1'))
-  const row2 = (document.getElementById('row2'))
 
   // Filter restaurants
   const rFiltered = data.restaurants
